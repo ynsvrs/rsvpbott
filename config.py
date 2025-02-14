@@ -1,0 +1,2 @@
+BOT_TOKEN = "7098407532:AAFfw7AjVMl-RGL1oMjUn8jHthG_Iwuo5vg" # 0
+GOOGLE_CREDENTIALS_FILE = "credentials.json"
