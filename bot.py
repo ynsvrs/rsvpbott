@@ -3,7 +3,7 @@ from datetime import datetime
 from reminder import schedule_reminder  # Import reminders
 from config import BOT_TOKEN  # Bot token
 from rsvp import handle_rsvp  # RSVP handler
-from invite import generate_event_link, generate_event_id_and_store, invite_participants  # Invitation functions
+from invite import generate_event_link, generate_event_id_and_store  # Invitation functions
 from events import list_events, cancel_event, edit_event  # Event listing, cancellation, and editing
 from guests import show_guest_list  # Guest list function
 
@@ -19,7 +19,6 @@ class RSVPBot:
         self.bot.message_handler(commands=['myevents'])(self.my_events_command)
         self.bot.message_handler(commands=['cancel'])(self.cancel_event_command)
         self.bot.message_handler(commands=['edit'])(self.edit_event_command)
-        self.bot.message_handler(commands=['invite'])(self.invite_command)
         self.bot.message_handler(commands=['rsvp'])(self.rsvp_command)
         self.bot.message_handler(commands=['guestlist'])(self.guest_list_command)
 
@@ -178,50 +177,6 @@ class RSVPBot:
         except ValueError:
             self.bot.send_message(chat_id, "❌ Invalid time format. Use HH:MM.")
             self.bot.register_next_step_handler(message, self.set_new_event_time, event_id)
-
-    def invite_command(self, message):
-        """Handles the invite command."""
-        chat_id = message.chat.id
-        events = list_events(chat_id, self.events_data)
-        if not events:
-            self.bot.send_message(chat_id, "❌ No events found to invite guests.")
-        else:
-            markup = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True)
-            for event in events:
-                markup.add(event['id'])
-            self.bot.send_message(chat_id, "Select the event to invite guests:", reply_markup=markup)
-            self.bot.register_next_step_handler(message, self.select_event_to_invite)
-
-    def select_event_to_invite(self, message):
-        """Handles the selection of an event to invite guests."""
-        chat_id = message.chat.id
-        event_id = message.text
-        if event_id in self.events_data['events']:
-            event = self.events_data['events'][event_id]
-            guest_list = "\n".join([f"Guest Name: {guest_name}" for guest_name in event.get('guests', [])])
-            self.bot.send_message(chat_id, f"Guests for event '{event['name']}']:\n{guest_list}")
-            self.bot.send_message(chat_id, "📩 Enter the names of participants separated by commas to invite:")
-            self.bot.register_next_step_handler(message, self.process_invitees, event_id)
-        else:
-            self.bot.send_message(chat_id, "❌ Invalid event ID.")
-            self.bot.register_next_step_handler(message, self.select_event_to_invite)
-
-    def process_invitees(self, message, event_id):
-        """Processes and sends invitations to participants."""
-        chat_id = message.chat.id
-        try:
-            invitees = [name.strip() for name in message.text.split(",")]
-            for invitee_name in invitees:
-                try:
-                    self.bot.send_message(chat_id, f"📩 You have invited {invitee_name} to the event \"{self.events_data['events'][event_id]['name']}\"!\n"
-                                                   f"📅 Date: {self.events_data['events'][event_id]['date']}\n"
-                                                   f"⏰ Time: {self.events_data['events'][event_id]['time']}")
-                    self.events_data['events'][event_id].setdefault('guests', []).append(invitee_name)
-                except Exception as e:
-                    print(f"Failed to process invitation for {invitee_name}: {e}")
-            self.bot.send_message(chat_id, "✅ Invitations sent successfully.")
-        except Exception as e:
-            self.bot.send_message(chat_id, f"❌ An error occurred: {e}")
 
     def rsvp_command(self, message):
         """Handles the RSVP command."""
