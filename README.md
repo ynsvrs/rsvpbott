@@ -11,6 +11,7 @@ A Telegram bot designed to help users manage events by allowing them to create, 
 - **RSVP**: Confirm attendance or mark as unavailable for an event.
 - **Invitations**: Send event invitations to participants with a Google Calendar link.
 - **Reminders**: Automatic reminders for upcoming events.
+- **Guests**: Guest list
 
 ## Requirements
 
