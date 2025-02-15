@@ -25,4 +25,4 @@ def generate_event_id_and_store(chat_id, events_data):
         'date': events_data[chat_id]['date'],
         'time': events_data[chat_id]['time']
     }
-    return event_id
+    return event_id #return
